@@ -2,11 +2,112 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hummingbird.dev/hnf/v0.1/domains/bom.json",
   "title": "HNF domain: bom",
+  "description": "Bill of materials domain — component records, supplier refs, lifecycle (HNF v0.1 Phase 0).",
   "type": "object",
-  "description": "Stub — Phase 0 domain.",
+  "additionalProperties": false,
+  "required": [
+    "domain",
+    "version",
+    "hnf_type",
+    "object_id",
+    "properties"
+  ],
   "properties": {
-    "domain": { "const": "bom" },
-    "version": { "const": "0.1" }
+    "domain": {
+      "const": "bom",
+      "description": "Domain identifier"
+    },
+    "version": {
+      "const": "0.1",
+      "description": "HNF domain schema version"
+    },
+    "hnf_type": {
+      "type": "string",
+      "minLength": 1,
+      "default": "hardware.object",
+      "description": "HNF object type discriminator"
+    },
+    "object_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable object identifier (UUID recommended)"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "description": "Optional SHA-256 content hash for blob sidecar"
+    },
+    "refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": [],
+      "description": "Cross-object references (e.g. source schematic object_id)"
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lines"],
+      "properties": {
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/line" }
+        }
+      }
+    }
   },
-  "required": ["domain", "version"]
+  "$defs": {
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["line_id", "quantity"],
+      "properties": {
+        "line_id": { "type": "string", "minLength": 1 },
+        "quantity": { "type": "integer", "minimum": 1 },
+        "refdes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "default": []
+        },
+        "mpn": { "type": "string", "minLength": 1 },
+        "manufacturer": { "type": "string" },
+        "supplier_ref": { "type": "string" },
+        "lifecycle": {
+          "type": "string",
+          "enum": ["active", "nrnd", "eol", "obsolete", "unknown"]
+        },
+        "description": { "type": "string" }
+      },
+      "anyOf": [
+        { "required": ["refdes"] },
+        { "required": ["mpn"] }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "domain": "bom",
+      "version": "0.1",
+      "hnf_type": "hardware.object",
+      "object_id": "550e8400-e29b-41d4-a716-446655440002",
+      "refs": ["550e8400-e29b-41d4-a716-446655440001"],
+      "properties": {
+        "lines": [
+          {
+            "line_id": "line-1",
+            "quantity": 1,
+            "refdes": ["R1"],
+            "mpn": "RC0603FR-0710KL",
+            "manufacturer": "Yageo",
+            "supplier_ref": "digkey:311-10.0KCRCT-ND",
+            "lifecycle": "active",
+            "description": "10k 1% 0603"
+          }
+        ]
+      }
+    }
+  ]
 }

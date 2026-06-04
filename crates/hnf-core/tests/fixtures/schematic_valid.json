@@ -1,0 +1,38 @@
+{
+  "domain": "schematic",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440001",
+  "refs": [],
+  "properties": {
+    "symbols": [
+      {
+        "id": "sym-r1",
+        "refdes": "R1",
+        "lib_id": "Device:R",
+        "value": "10k"
+      }
+    ],
+    "nets": [
+      {
+        "id": "net-gnd",
+        "name": "GND",
+        "net_class": "power"
+      }
+    ],
+    "pins": [
+      {
+        "symbol_id": "sym-r1",
+        "pin_number": "1",
+        "net_id": "net-gnd"
+      }
+    ],
+    "power_domains": [
+      {
+        "id": "pd-3v3",
+        "name": "+3V3",
+        "voltage": "3.3V"
+      }
+    ]
+  }
+}

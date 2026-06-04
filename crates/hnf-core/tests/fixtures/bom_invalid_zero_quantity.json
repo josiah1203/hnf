@@ -1,0 +1,15 @@
+{
+  "domain": "bom",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440003",
+  "properties": {
+    "lines": [
+      {
+        "line_id": "line-1",
+        "quantity": 0,
+        "refdes": ["C1"]
+      }
+    ]
+  }
+}

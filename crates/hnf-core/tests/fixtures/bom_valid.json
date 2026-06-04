@@ -1,0 +1,21 @@
+{
+  "domain": "bom",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440002",
+  "refs": ["550e8400-e29b-41d4-a716-446655440001"],
+  "properties": {
+    "lines": [
+      {
+        "line_id": "line-1",
+        "quantity": 1,
+        "refdes": ["R1"],
+        "mpn": "RC0603FR-0710KL",
+        "manufacturer": "Yageo",
+        "supplier_ref": "digkey:311-10.0KCRCT-ND",
+        "lifecycle": "active",
+        "description": "10k 1% 0603"
+      }
+    ]
+  }
+}

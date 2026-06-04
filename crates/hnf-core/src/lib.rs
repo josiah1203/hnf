@@ -1,5 +1,15 @@
 //! HNF core — document model and ToolAdapter traits (HummingBird v8).
 
+pub mod domain;
+
+pub use domain::{
+    parse_bom, parse_schematic, serialize_bom, serialize_schematic, validate_bom,
+    validate_schematic, BomDomain, BomLine, BomProperties, DomainParseError,
+    DomainValidationError, SchematicDomain, SchematicNet, SchematicPin, SchematicPowerDomain,
+    SchematicProperties, SchematicSymbol, BOM_DOMAIN, BOM_VERSION, SCHEMATIC_DOMAIN,
+    SCHEMATIC_VERSION,
+};
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sidecar_protocol::{SceneGraphEdge, SceneGraphNode};

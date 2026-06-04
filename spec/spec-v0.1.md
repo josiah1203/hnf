@@ -104,7 +104,7 @@ Phase 0 M3: object-graph semantic diff (`HOS_MERGE_ENGINE=semantic`).
 
 ## Validation
 
-- **Rust:** `hnf_core::validate(&HnfManifest)` — required manifest fields
+- **Rust:** `hnf_core::validate(&HnfManifest)` — required manifest fields; `parse_schematic` / `parse_bom` — domain payloads
 - **Cloud:** `hbp-cloud/api/app/services/hnf.py` — document body + upload hints (additive warnings)
 
 ## CRDT / collaboration

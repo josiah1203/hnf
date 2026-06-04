@@ -2,11 +2,158 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hummingbird.dev/hnf/v0.1/domains/schematic.json",
   "title": "HNF domain: schematic",
+  "description": "Schematic capture domain — symbols, nets, pins, and power domains (HNF v0.1 Phase 0).",
   "type": "object",
-  "description": "Phase 0 stub — expand in M0/M1.",
+  "additionalProperties": false,
+  "required": [
+    "domain",
+    "version",
+    "hnf_type",
+    "object_id",
+    "properties"
+  ],
   "properties": {
-    "domain": { "const": "schematic" },
-    "version": { "const": "0.1" }
+    "domain": {
+      "const": "schematic",
+      "description": "Domain identifier"
+    },
+    "version": {
+      "const": "0.1",
+      "description": "HNF domain schema version"
+    },
+    "hnf_type": {
+      "type": "string",
+      "minLength": 1,
+      "default": "hardware.object",
+      "description": "HNF object type discriminator"
+    },
+    "object_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable object identifier (UUID recommended)"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "description": "Optional SHA-256 content hash for blob sidecar"
+    },
+    "refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": [],
+      "description": "Cross-object references (object_id values)"
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "symbols": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/symbol" },
+          "default": []
+        },
+        "nets": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/net" },
+          "default": []
+        },
+        "pins": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pin" },
+          "default": []
+        },
+        "power_domains": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/power_domain" },
+          "default": []
+        }
+      }
+    }
   },
-  "required": ["domain", "version"]
+  "$defs": {
+    "symbol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "refdes"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "refdes": { "type": "string", "minLength": 1 },
+        "lib_id": { "type": "string" },
+        "value": { "type": "string" }
+      }
+    },
+    "net": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "net_class": { "type": "string" }
+      }
+    },
+    "pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol_id", "pin_number", "net_id"],
+      "properties": {
+        "symbol_id": { "type": "string", "minLength": 1 },
+        "pin_number": { "type": "string", "minLength": 1 },
+        "net_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "power_domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "voltage": { "type": "string" }
+      }
+    }
+  },
+  "examples": [
+    {
+      "domain": "schematic",
+      "version": "0.1",
+      "hnf_type": "hardware.object",
+      "object_id": "550e8400-e29b-41d4-a716-446655440001",
+      "refs": [],
+      "properties": {
+        "symbols": [
+          {
+            "id": "sym-r1",
+            "refdes": "R1",
+            "lib_id": "Device:R",
+            "value": "10k"
+          }
+        ],
+        "nets": [
+          {
+            "id": "net-gnd",
+            "name": "GND",
+            "net_class": "power"
+          }
+        ],
+        "pins": [
+          {
+            "symbol_id": "sym-r1",
+            "pin_number": "1",
+            "net_id": "net-gnd"
+          }
+        ],
+        "power_domains": [
+          {
+            "id": "pd-3v3",
+            "name": "+3V3",
+            "voltage": "3.3V"
+          }
+        ]
+      }
+    }
+  ]
 }
