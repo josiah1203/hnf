@@ -1,0 +1,19 @@
+[workspace]
+members = ["crates/hnf-core"]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "Apache-2.0"
+version = "0.1.0"
+authors = ["HummingBird Labs"]
+repository = "https://github.com/hummingbird-labs/hnf"
+rust-version = "1.70"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sidecar-protocol = { path = "../hb-bridge/crates/protocol" }
+
+[profile.dev]
+incremental = true

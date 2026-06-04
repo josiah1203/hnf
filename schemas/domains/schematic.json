@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hummingbird.dev/hnf/v0.1/domains/schematic.json",
+  "title": "HNF domain: schematic",
+  "type": "object",
+  "description": "Phase 0 stub — expand in M0/M1.",
+  "properties": {
+    "domain": { "const": "schematic" },
+    "version": { "const": "0.1" }
+  },
+  "required": ["domain", "version"]
+}

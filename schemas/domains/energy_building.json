@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hummingbird.dev/hnf/v0.1/domains/energy_building.json",
+  "title": "HNF domain: energy_building",
+  "type": "object",
+  "description": "Stub — Phase 1 domain.",
+  "properties": {
+    "domain": { "const": "energy_building" },
+    "version": { "const": "0.1" }
+  },
+  "required": ["domain", "version"]
+}

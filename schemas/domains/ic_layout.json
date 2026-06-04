@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hummingbird.dev/hnf/v0.1/domains/ic_layout.json",
+  "title": "HNF domain: ic_layout",
+  "type": "object",
+  "description": "Stub — Phase 0 domain.",
+  "properties": {
+    "domain": { "const": "ic_layout" },
+    "version": { "const": "0.1" }
+  },
+  "required": ["domain", "version"]
+}
