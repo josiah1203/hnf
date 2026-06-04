@@ -4,8 +4,94 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sidecar_protocol::{SceneGraphEdge, SceneGraphNode};
 
+/// Supported `hnf_version` values for spec v0.1.
+pub const HNF_VERSION_V0_1: &str = "0.1";
+
+/// Phase 0 domain IDs (see `spec/spec-v0.1.md`).
+pub const PHASE0_DOMAINS: &[&str] = &[
+    "schematic",
+    "layout",
+    "ic_layout",
+    "mechanical",
+    "simulation",
+    "bom",
+    "firmware",
+];
+
+/// Top-level manifest (v8 core layer). Required on every HNF package.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HnfManifest {
+    pub hnf_version: String,
+    pub doc_id: String,
+    pub disciplines: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_revision: Option<String>,
+}
+
+/// Single manifest validation failure.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ManifestValidationError {
+    pub field: &'static str,
+    pub message: String,
+}
+
+impl std::fmt::Display for ManifestValidationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.field, self.message)
+    }
+}
+
+/// Validate required manifest fields per HNF spec v0.1.
+pub fn validate(manifest: &HnfManifest) -> Result<(), Vec<ManifestValidationError>> {
+    let mut errors = Vec::new();
+
+    if manifest.hnf_version.trim().is_empty() {
+        errors.push(ManifestValidationError {
+            field: "hnf_version",
+            message: "required non-empty string".into(),
+        });
+    } else if manifest.hnf_version != HNF_VERSION_V0_1 {
+        errors.push(ManifestValidationError {
+            field: "hnf_version",
+            message: format!("unsupported; expected \"{HNF_VERSION_V0_1}\""),
+        });
+    }
+
+    if manifest.doc_id.trim().is_empty() {
+        errors.push(ManifestValidationError {
+            field: "doc_id",
+            message: "required non-empty string".into(),
+        });
+    }
+
+    if manifest.disciplines.is_empty() {
+        errors.push(ManifestValidationError {
+            field: "disciplines",
+            message: "required non-empty array".into(),
+        });
+    } else {
+        for (i, d) in manifest.disciplines.iter().enumerate() {
+            if d.trim().is_empty() {
+                errors.push(ManifestValidationError {
+                    field: "disciplines",
+                    message: format!("entry {i} must be non-empty"),
+                });
+            }
+        }
+    }
+
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct HnfDocument {
+    pub manifest: HnfManifest,
     pub document_uri: String,
     #[serde(default)]
     pub metadata: Value,
@@ -94,10 +180,75 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    fn sample_manifest() -> HnfManifest {
+        HnfManifest {
+            hnf_version: HNF_VERSION_V0_1.to_string(),
+            doc_id: "550e8400-e29b-41d4-a716-446655440000".to_string(),
+            disciplines: vec!["schematic".to_string(), "layout".to_string()],
+            created_at: None,
+            schema_revision: None,
+        }
+    }
+
+    #[test]
+    fn validate_accepts_required_manifest_fields() {
+        assert!(validate(&sample_manifest()).is_ok());
+    }
+
+    #[test]
+    fn validate_rejects_missing_or_invalid_manifest_fields() {
+        let cases = [
+            (
+                HnfManifest {
+                    hnf_version: "".into(),
+                    ..sample_manifest()
+                },
+                "hnf_version",
+            ),
+            (
+                HnfManifest {
+                    hnf_version: "9.9".into(),
+                    ..sample_manifest()
+                },
+                "hnf_version",
+            ),
+            (
+                HnfManifest {
+                    doc_id: "  ".into(),
+                    ..sample_manifest()
+                },
+                "doc_id",
+            ),
+            (
+                HnfManifest {
+                    disciplines: vec![],
+                    ..sample_manifest()
+                },
+                "disciplines",
+            ),
+            (
+                HnfManifest {
+                    disciplines: vec!["schematic".into(), "".into()],
+                    ..sample_manifest()
+                },
+                "disciplines",
+            ),
+        ];
+
+        for (manifest, expected_field) in cases {
+            let err = validate(&manifest).expect_err("manifest should fail validation");
+            assert!(
+                err.iter().any(|e| e.field == expected_field),
+                "expected field {expected_field}, got {err:?}"
+            );
+        }
+    }
+
     #[test]
     fn minimum_document_model_serializes() {
         let doc = HnfDocument {
-            document_uri: "hcp://docs/board.kicad".to_string(),
+            manifest: sample_manifest(),
+            document_uri: "hbp://docs/board.kicad".to_string(),
             metadata: json!({"tool": "kicad"}),
             objects: vec![HnfObject {
                 id: "obj-1".to_string(),
@@ -109,6 +260,7 @@ mod tests {
         let encoded = serde_json::to_string(&doc).expect("serialize hnf");
         let decoded: HnfDocument = serde_json::from_str(&encoded).expect("deserialize hnf");
         assert_eq!(decoded.objects.len(), 1);
+        assert!(validate(&decoded.manifest).is_ok());
     }
 
     #[test]
