@@ -1,0 +1,22 @@
+{
+  "domain": "simulation",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440013",
+  "properties": {
+    "models": [
+      {
+        "id": "mdl-spice-1",
+        "kind": "spice",
+        "solver": "ngspice"
+      }
+    ],
+    "probes": [
+      {
+        "id": "prb-vout",
+        "model_id": "mdl-spice-1",
+        "signal": "V(out)"
+      }
+    ]
+  }
+}

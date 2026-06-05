@@ -1,0 +1,16 @@
+{
+  "domain": "ic_layout",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440011",
+  "properties": {
+    "layers": [{ "id": "ly-m1", "layer": 1, "datatype": 0 }],
+    "shapes": [
+      {
+        "id": "sh-inv",
+        "layer_id": "ly-missing",
+        "bbox": [0, 0, 100, 100]
+      }
+    ]
+  }
+}

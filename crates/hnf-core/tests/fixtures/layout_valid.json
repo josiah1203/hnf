@@ -1,0 +1,27 @@
+{
+  "domain": "layout",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440010",
+  "refs": ["550e8400-e29b-41d4-a716-446655440001"],
+  "properties": {
+    "footprints": [
+      {
+        "id": "fp-u1",
+        "refdes": "U1",
+        "layer": "F.Cu",
+        "position_x": 10.0,
+        "position_y": 20.0,
+        "rotation_deg": 90.0
+      }
+    ],
+    "tracks": [
+      {
+        "id": "tr-gnd",
+        "net": "GND",
+        "layer": "B.Cu",
+        "width_mm": 0.2
+      }
+    ]
+  }
+}

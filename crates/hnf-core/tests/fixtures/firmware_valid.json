@@ -1,0 +1,29 @@
+{
+  "domain": "firmware",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440014",
+  "properties": {
+    "targets": [
+      {
+        "id": "tgt-esp32",
+        "platform": "espressif32",
+        "board": "esp32dev"
+      }
+    ],
+    "sources": [
+      {
+        "id": "src-main",
+        "path": "src/main.cpp",
+        "language": "cpp"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "art-bin",
+        "name": "firmware.bin",
+        "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ]
+  }
+}

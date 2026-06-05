@@ -2,11 +2,66 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hummingbird.dev/hnf/v0.1/domains/layout.json",
   "title": "HNF domain: layout",
+  "description": "PCB layout domain — footprints and tracks (HNF v0.1 Phase 0).",
   "type": "object",
-  "description": "Stub — Phase 0 domain.",
+  "additionalProperties": false,
+  "required": ["domain", "version", "hnf_type", "object_id", "properties"],
   "properties": {
     "domain": { "const": "layout" },
-    "version": { "const": "0.1" }
+    "version": { "const": "0.1" },
+    "hnf_type": { "type": "string", "minLength": 1, "default": "hardware.object" },
+    "object_id": { "type": "string", "minLength": 1 },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "description": "SHA-256 of HNFT blob sidecar (geometry, copper)"
+    },
+    "refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "default": []
+    },
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "footprints": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/footprint" },
+          "default": []
+        },
+        "tracks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/track" },
+          "default": []
+        }
+      }
+    }
   },
-  "required": ["domain", "version"]
+  "$defs": {
+    "footprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "refdes", "layer"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "refdes": { "type": "string", "minLength": 1 },
+        "layer": { "type": "string", "minLength": 1 },
+        "position_x": { "type": "number" },
+        "position_y": { "type": "number" },
+        "rotation_deg": { "type": "number" }
+      }
+    },
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "net", "layer"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "net": { "type": "string", "minLength": 1 },
+        "layer": { "type": "string", "minLength": 1 },
+        "width_mm": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
 }

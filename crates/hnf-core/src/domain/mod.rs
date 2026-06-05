@@ -1,17 +1,90 @@
 //! HNF domain payloads (Phase 0 v0.1).
 
+use serde_json::Value;
+
 mod bom;
+mod firmware;
+mod ic_layout;
+mod layout;
+mod mechanical;
 mod schematic;
+mod simulation;
 
 pub use bom::{
     parse_bom, serialize_bom, validate_bom, BomDomain, BomLine, BomProperties, BOM_DOMAIN,
     BOM_VERSION,
+};
+pub use firmware::{
+    parse_firmware, serialize_firmware, validate_firmware, FirmwareArtifact, FirmwareDomain,
+    FirmwareProperties, FirmwareSource, FirmwareTarget, FIRMWARE_DOMAIN, FIRMWARE_VERSION,
+};
+pub use ic_layout::{
+    parse_ic_layout, serialize_ic_layout, validate_ic_layout, IcLayer, IcLayoutDomain,
+    IcLayoutProperties, IcShape, IC_LAYOUT_DOMAIN, IC_LAYOUT_VERSION,
+};
+pub use layout::{
+    parse_layout, serialize_layout, validate_layout, LayoutDomain, LayoutFootprint,
+    LayoutProperties, LayoutTrack, LAYOUT_DOMAIN, LAYOUT_VERSION,
+};
+pub use mechanical::{
+    parse_mechanical, serialize_mechanical, validate_mechanical, MechanicalConstraint,
+    MechanicalDomain, MechanicalProperties, MechanicalSolid, MECHANICAL_DOMAIN,
+    MECHANICAL_VERSION,
 };
 pub use schematic::{
     parse_schematic, serialize_schematic, validate_schematic, SchematicDomain, SchematicNet,
     SchematicPin, SchematicPowerDomain, SchematicProperties, SchematicSymbol, SCHEMATIC_DOMAIN,
     SCHEMATIC_VERSION,
 };
+pub use simulation::{
+    parse_simulation, serialize_simulation, validate_simulation, SimulationDomain,
+    SimulationModel, SimulationProbe, SimulationProperties, SIMULATION_DOMAIN,
+    SIMULATION_VERSION,
+};
+
+/// Phase 0 domains implemented in Rust (`hnf-core`).
+pub const PHASE0_RUST_DOMAINS: &[&str] = &[
+    SCHEMATIC_DOMAIN,
+    LAYOUT_DOMAIN,
+    IC_LAYOUT_DOMAIN,
+    MECHANICAL_DOMAIN,
+    SIMULATION_DOMAIN,
+    BOM_DOMAIN,
+    FIRMWARE_DOMAIN,
+];
+
+/// Parsed Phase 0 domain document (typed per domain).
+#[derive(Debug, Clone, PartialEq)]
+pub enum DomainDocument {
+    Schematic(SchematicDomain),
+    Layout(LayoutDomain),
+    IcLayout(IcLayoutDomain),
+    Mechanical(MechanicalDomain),
+    Simulation(SimulationDomain),
+    Bom(BomDomain),
+    Firmware(FirmwareDomain),
+}
+
+/// Deserialize and validate any Phase 0 domain payload by `domain` field.
+pub fn parse_domain(value: &Value) -> Result<DomainDocument, DomainParseError> {
+    let domain_id = value
+        .get("domain")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| DomainParseError::Serde("missing domain field".into()))?;
+
+    match domain_id {
+        SCHEMATIC_DOMAIN => parse_schematic(value).map(DomainDocument::Schematic),
+        LAYOUT_DOMAIN => parse_layout(value).map(DomainDocument::Layout),
+        IC_LAYOUT_DOMAIN => parse_ic_layout(value).map(DomainDocument::IcLayout),
+        MECHANICAL_DOMAIN => parse_mechanical(value).map(DomainDocument::Mechanical),
+        SIMULATION_DOMAIN => parse_simulation(value).map(DomainDocument::Simulation),
+        BOM_DOMAIN => parse_bom(value).map(DomainDocument::Bom),
+        FIRMWARE_DOMAIN => parse_firmware(value).map(DomainDocument::Firmware),
+        other => Err(DomainParseError::Serde(format!(
+            "unsupported domain \"{other}\""
+        ))),
+    }
+}
 
 /// Shared domain envelope per `spec/spec-v0.1.md`.
 pub const HNF_TYPE_OBJECT: &str = "hardware.object";
@@ -160,5 +233,22 @@ mod tests {
             &Some("not-a-hash".into()),
         );
         assert!(errs.iter().any(|e| e.field == "content_hash"));
+    }
+
+    #[test]
+    fn phase0_domain_constants_are_unique() {
+        let domains = [
+            SCHEMATIC_DOMAIN,
+            LAYOUT_DOMAIN,
+            IC_LAYOUT_DOMAIN,
+            MECHANICAL_DOMAIN,
+            SIMULATION_DOMAIN,
+            BOM_DOMAIN,
+            FIRMWARE_DOMAIN,
+        ];
+        let mut seen = std::collections::HashSet::new();
+        for d in domains {
+            assert!(seen.insert(d), "duplicate domain id {d}");
+        }
     }
 }

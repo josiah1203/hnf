@@ -1,13 +1,27 @@
 //! HNF core — document model and ToolAdapter traits (HummingBird v8).
 
+pub mod diff;
 pub mod domain;
 
+pub use diff::{
+    diff_bom, diff_domain, diff_path_fallback, diff_schematic, diff_values, uses_object_graph_diff,
+    DiffChange, DiffChangeType,
+};
 pub use domain::{
-    parse_bom, parse_schematic, serialize_bom, serialize_schematic, validate_bom,
-    validate_schematic, BomDomain, BomLine, BomProperties, DomainParseError,
-    DomainValidationError, SchematicDomain, SchematicNet, SchematicPin, SchematicPowerDomain,
-    SchematicProperties, SchematicSymbol, BOM_DOMAIN, BOM_VERSION, SCHEMATIC_DOMAIN,
-    SCHEMATIC_VERSION,
+    parse_bom, parse_domain, parse_firmware, parse_ic_layout, parse_layout, parse_mechanical,
+    parse_schematic, parse_simulation, serialize_bom, serialize_firmware, serialize_ic_layout,
+    serialize_layout, serialize_mechanical, serialize_schematic, serialize_simulation, validate_bom,
+    validate_firmware, validate_ic_layout, validate_layout, validate_mechanical,
+    validate_schematic, validate_simulation, BomDomain, BomLine, BomProperties, DomainDocument,
+    DomainParseError, DomainValidationError, FirmwareArtifact, FirmwareDomain, FirmwareProperties,
+    FirmwareSource, FirmwareTarget, IcLayer, IcLayoutDomain, IcLayoutProperties, IcShape,
+    LayoutDomain, LayoutFootprint, LayoutProperties, LayoutTrack, MechanicalConstraint,
+    MechanicalDomain, MechanicalProperties, MechanicalSolid, SchematicDomain, SchematicNet,
+    SchematicPin, SchematicPowerDomain, SchematicProperties, SchematicSymbol, SimulationDomain,
+    SimulationModel, SimulationProbe, SimulationProperties, BOM_DOMAIN, BOM_VERSION,
+    FIRMWARE_DOMAIN, FIRMWARE_VERSION, IC_LAYOUT_DOMAIN, IC_LAYOUT_VERSION, LAYOUT_DOMAIN,
+    LAYOUT_VERSION, MECHANICAL_DOMAIN, MECHANICAL_VERSION, PHASE0_RUST_DOMAINS, SCHEMATIC_DOMAIN,
+    SCHEMATIC_VERSION, SIMULATION_DOMAIN, SIMULATION_VERSION,
 };
 
 use serde::{Deserialize, Serialize};
@@ -18,15 +32,7 @@ use sidecar_protocol::{SceneGraphEdge, SceneGraphNode};
 pub const HNF_VERSION_V0_1: &str = "0.1";
 
 /// Phase 0 domain IDs (see `spec/spec-v0.1.md`).
-pub const PHASE0_DOMAINS: &[&str] = &[
-    "schematic",
-    "layout",
-    "ic_layout",
-    "mechanical",
-    "simulation",
-    "bom",
-    "firmware",
-];
+pub const PHASE0_DOMAINS: &[&str] = PHASE0_RUST_DOMAINS;
 
 /// Top-level manifest (v8 core layer). Required on every HNF package.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -289,5 +295,13 @@ mod tests {
             90
         );
         std::env::remove_var("HBP_KICAD_TIMEOUT_SECS");
+    }
+
+    #[test]
+    fn phase0_domains_match_rust_implementations() {
+        assert_eq!(PHASE0_DOMAINS.len(), PHASE0_RUST_DOMAINS.len());
+        for d in PHASE0_DOMAINS {
+            assert!(PHASE0_RUST_DOMAINS.contains(d));
+        }
     }
 }

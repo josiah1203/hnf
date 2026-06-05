@@ -1,0 +1,23 @@
+{
+  "domain": "mechanical",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440012",
+  "properties": {
+    "solids": [
+      {
+        "id": "solid-bracket-1",
+        "name": "Mounting Bracket",
+        "material": "Aluminum",
+        "volume_mm3": 128.5
+      }
+    ],
+    "constraints": [
+      {
+        "id": "c-fix-1",
+        "type": "fixed",
+        "solid_a": "solid-bracket-1"
+      }
+    ]
+  }
+}

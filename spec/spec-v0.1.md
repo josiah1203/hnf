@@ -86,7 +86,21 @@ Domain payloads use a shared object envelope (unchanged from early v0.1 stubs):
 | `bom` | Bill of materials | derived / Bridge |
 | `firmware` | Embedded artifacts | PlatformIO, Verilator, Yosys |
 
-JSON schema stubs: [`schemas/domains/`](../schemas/domains/).
+Full JSON schemas: [`schemas/domains/`](../schemas/domains/). Rust validators and fixtures: `crates/hnf-core`.
+
+### Domain payloads (implemented in `hnf-core`)
+
+| Domain | `properties` (v0.1) | HNFT blob refs |
+|--------|----------------------|----------------|
+| `schematic` | `symbols`, `nets`, `pins`, `power_domains` | optional `content_hash` on envelope |
+| `layout` | `footprints`, `tracks` (≥1 required) | envelope `content_hash` → PCB geometry/copper blobs |
+| `ic_layout` | `layers` (≥1), `shapes` with `bbox` | envelope → GDS/OASIS HNFT |
+| `mechanical` | `solids` (≥1), `constraints` | envelope → STEP/BREP mesh HNFT |
+| `simulation` | `models` (≥1), `probes` | per-model `netlist_hash` → SPICE/EM/FEA deck HNFT |
+| `bom` | `lines` (≥1) | optional envelope hash |
+| `firmware` | `targets` (≥1), `sources` and/or `artifacts` | `artifacts[].content_hash` → firmware binary HNFT |
+
+HNFT (HummingBird Native Format **T**ransport) sidecars are content-addressed blobs referenced by 64-character SHA-256 `content_hash` fields. Object envelopes may also carry top-level `content_hash` when the whole domain body is stored out-of-line.
 
 ## Phase 1 domains (planned M5-B)
 
@@ -99,12 +113,19 @@ JSON schema stubs: [`schemas/domains/`](../schemas/domains/).
 
 ## Structural diff
 
-Phase 0: path-level tree diff in HOS (`legacy` merge engine).  
-Phase 0 M3: object-graph semantic diff (`HOS_MERGE_ENGINE=semantic`).
+`hnf-core::diff` (Phase 0 M0):
+
+| Domain | Strategy | Notes |
+|--------|----------|-------|
+| `schematic` | `object_graph` | Entities keyed by `id` (symbols, nets, power_domains) or `symbol_id:pin_number` (pins) |
+| `bom` | `object_graph` | Lines keyed by `line_id` |
+| `layout`, `ic_layout`, `mechanical`, `simulation`, `firmware` | `path_fallback` | JSON path tree diff until domain-specific graph diff lands |
+
+HOS merge: path-level tree diff in `legacy` engine; object-graph semantic merge for schematic/bom bodies when `HOS_MERGE_ENGINE=semantic` (M3).
 
 ## Validation
 
-- **Rust:** `hnf_core::validate(&HnfManifest)` — required manifest fields; `parse_schematic` / `parse_bom` — domain payloads
+- **Rust:** `hnf_core::validate(&HnfManifest)` — manifest; `parse_domain` / `parse_<domain>` — all seven Phase 0 domains; `diff_domain` — structural compare
 - **Cloud:** `hbp-cloud/api/app/services/hnf.py` — document body + upload hints (additive warnings)
 
 ## CRDT / collaboration
