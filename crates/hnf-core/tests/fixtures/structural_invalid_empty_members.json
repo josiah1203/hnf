@@ -1,0 +1,7 @@
+{
+  "domain": "structural",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440025",
+  "properties": {"analysis_type": "static_linear", "members": [], "loads": [], "materials": []}
+}

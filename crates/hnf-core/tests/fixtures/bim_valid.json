@@ -1,0 +1,11 @@
+{
+  "domain": "bim",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440020",
+  "properties": {
+    "project_name": "Office Tower A",
+    "storeys": [{"id": "storey-1", "name": "Ground", "elevation_m": 0.0}],
+    "elements": [{"id": "wall-1", "ifc_class": "IfcWall", "name": "Exterior Wall", "storey_id": "storey-1"}]
+  }
+}

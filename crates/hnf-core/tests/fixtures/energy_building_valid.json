@@ -1,0 +1,12 @@
+{
+  "domain": "energy_building",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440026",
+  "properties": {
+    "model_name": "Office Energy Model",
+    "weather_file": "USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw",
+    "zones": [{"id": "zone-1", "name": "Open Office", "floor_area_m2": 500.0}],
+    "systems": [{"id": "hvac-1", "system_type": "VAV", "serves_zone_ids": ["zone-1"]}]
+  }
+}

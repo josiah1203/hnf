@@ -1,0 +1,11 @@
+{
+  "domain": "bim",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440021",
+  "properties": {
+    "project_name": "Bad BIM",
+    "storeys": [],
+    "elements": [{"id": "wall-1", "ifc_class": "IfcWall", "name": "Wall", "storey_id": "missing"}]
+  }
+}

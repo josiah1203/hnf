@@ -2,11 +2,53 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hummingbird.dev/hnf/v0.1/domains/bim.json",
   "title": "HNF domain: bim",
+  "description": "BIM domain — spatial structure and building elements (HNF v0.1 Phase 1).",
   "type": "object",
-  "description": "Stub — Phase 1 domain.",
+  "additionalProperties": false,
+  "required": ["domain", "version", "hnf_type", "object_id", "properties"],
   "properties": {
     "domain": { "const": "bim" },
-    "version": { "const": "0.1" }
+    "version": { "const": "0.1" },
+    "hnf_type": { "type": "string", "minLength": 1, "default": "hardware.object" },
+    "object_id": { "type": "string", "minLength": 1 },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "description": "SHA-256 of Tier B IFC blob (ADR-0002)"
+    },
+    "refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "default": [] },
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_name"],
+      "properties": {
+        "project_name": { "type": "string", "minLength": 1 },
+        "storeys": { "type": "array", "items": { "$ref": "#/$defs/storey" }, "default": [] },
+        "elements": { "type": "array", "items": { "$ref": "#/$defs/element" }, "default": [] }
+      }
+    }
   },
-  "required": ["domain", "version"]
+  "$defs": {
+    "storey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "elevation_m": { "type": "number" }
+      }
+    },
+    "element": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "ifc_class", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "ifc_class": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "storey_id": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
 }

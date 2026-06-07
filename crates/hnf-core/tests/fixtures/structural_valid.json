@@ -1,0 +1,12 @@
+{
+  "domain": "structural",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440024",
+  "properties": {
+    "analysis_type": "static_linear",
+    "materials": [{"id": "mat-steel", "name": "A992 Steel", "youngs_modulus_gpa": 200.0}],
+    "members": [{"id": "beam-1", "section": "W12x26", "material_id": "mat-steel"}],
+    "loads": [{"id": "load-1", "type": "point", "magnitude": 10.0, "member_id": "beam-1"}]
+  }
+}

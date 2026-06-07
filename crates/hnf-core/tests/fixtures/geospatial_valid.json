@@ -1,0 +1,10 @@
+{
+  "domain": "geospatial",
+  "version": "0.1",
+  "hnf_type": "hardware.object",
+  "object_id": "550e8400-e29b-41d4-a716-446655440022",
+  "properties": {
+    "crs": "EPSG:4326",
+    "layers": [{"id": "site", "name": "Site Boundary", "feature_count": 1}]
+  }
+}

@@ -2,11 +2,64 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hummingbird.dev/hnf/v0.1/domains/structural.json",
   "title": "HNF domain: structural",
+  "description": "Structural domain — members, loads, materials (HNF v0.1 Phase 1).",
   "type": "object",
-  "description": "Stub — Phase 1 domain.",
+  "additionalProperties": false,
+  "required": ["domain", "version", "hnf_type", "object_id", "properties"],
   "properties": {
     "domain": { "const": "structural" },
-    "version": { "const": "0.1" }
+    "version": { "const": "0.1" },
+    "hnf_type": { "type": "string", "minLength": 1, "default": "hardware.object" },
+    "object_id": { "type": "string", "minLength": 1 },
+    "content_hash": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+    "refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "default": [] },
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["analysis_type", "members"],
+      "properties": {
+        "analysis_type": { "type": "string", "minLength": 1 },
+        "members": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/member" }
+        },
+        "loads": { "type": "array", "items": { "$ref": "#/$defs/load" }, "default": [] },
+        "materials": { "type": "array", "items": { "$ref": "#/$defs/material" }, "default": [] }
+      }
+    }
   },
-  "required": ["domain", "version"]
+  "$defs": {
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "section"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "section": { "type": "string", "minLength": 1 },
+        "material_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "load": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "magnitude"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "magnitude": { "type": "number" },
+        "member_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "material": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "youngs_modulus_gpa": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
 }

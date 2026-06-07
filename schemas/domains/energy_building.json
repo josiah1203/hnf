@@ -2,11 +2,57 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hummingbird.dev/hnf/v0.1/domains/energy_building.json",
   "title": "HNF domain: energy_building",
+  "description": "Energy building domain — zones, systems, schedules (HNF v0.1 Phase 1).",
   "type": "object",
-  "description": "Stub — Phase 1 domain.",
+  "additionalProperties": false,
+  "required": ["domain", "version", "hnf_type", "object_id", "properties"],
   "properties": {
     "domain": { "const": "energy_building" },
-    "version": { "const": "0.1" }
+    "version": { "const": "0.1" },
+    "hnf_type": { "type": "string", "minLength": 1, "default": "hardware.object" },
+    "object_id": { "type": "string", "minLength": 1 },
+    "content_hash": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+    "refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "default": [] },
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_name", "zones"],
+      "properties": {
+        "model_name": { "type": "string", "minLength": 1 },
+        "weather_file": { "type": "string" },
+        "zones": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/zone" }
+        },
+        "systems": { "type": "array", "items": { "$ref": "#/$defs/system" }, "default": [] }
+      }
+    }
   },
-  "required": ["domain", "version"]
+  "$defs": {
+    "zone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "floor_area_m2": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "system": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "system_type"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "system_type": { "type": "string", "minLength": 1 },
+        "serves_zone_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "default": []
+        }
+      }
+    }
+  }
 }

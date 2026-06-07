@@ -1,10 +1,12 @@
 //! Integration tests using JSON fixtures under `tests/fixtures/`.
 
 use hnf_core::{
-    parse_bom, parse_domain, parse_firmware, parse_ic_layout, parse_layout, parse_mechanical,
-    parse_schematic, parse_simulation, serialize_bom, serialize_firmware, serialize_ic_layout,
-    serialize_layout, serialize_mechanical, serialize_schematic, serialize_simulation,
-    DomainParseError, PHASE0_RUST_DOMAINS,
+    parse_bim, parse_bom, parse_domain, parse_energy_building, parse_firmware, parse_geospatial,
+    parse_ic_layout, parse_layout, parse_mechanical, parse_schematic, parse_simulation,
+    parse_structural, serialize_bim, serialize_bom, serialize_energy_building, serialize_firmware,
+    serialize_geospatial, serialize_ic_layout, serialize_layout, serialize_mechanical,
+    serialize_schematic, serialize_simulation, serialize_structural, DomainParseError,
+    PHASE0_RUST_DOMAINS, PHASE1_RUST_DOMAINS,
 };
 use serde_json::Value;
 
@@ -168,6 +170,79 @@ fn fixture_firmware_invalid_empty_targets() {
 }
 
 #[test]
+fn phase1_fixtures_cover_all_rust_domains() {
+    assert_eq!(PHASE1_RUST_DOMAINS.len(), 4);
+}
+
+#[test]
+fn fixture_bim_valid_roundtrips() {
+    let value = load_fixture("bim_valid.json");
+    let domain = parse_bim(&value).expect("valid bim fixture");
+    assert_eq!(domain.properties.elements[0].ifc_class, "IfcWall");
+    let again = parse_bim(&serialize_bim(&domain)).expect("roundtrip");
+    assert_eq!(again, domain);
+}
+
+#[test]
+fn fixture_bim_invalid_unknown_storey() {
+    let value = load_fixture("bim_invalid_unknown_storey.json");
+    let err = parse_bim(&value).expect_err("unknown storey");
+    if let DomainParseError::Validation(errs) = err {
+        assert!(errs.iter().any(|e| e.field.contains("storey_id")));
+    } else {
+        panic!("expected validation error");
+    }
+}
+
+#[test]
+fn fixture_geospatial_valid_roundtrips() {
+    let value = load_fixture("geospatial_valid.json");
+    let domain = parse_geospatial(&value).expect("valid geospatial fixture");
+    assert_eq!(domain.properties.crs, "EPSG:4326");
+    let again = parse_geospatial(&serialize_geospatial(&domain)).expect("roundtrip");
+    assert_eq!(again, domain);
+}
+
+#[test]
+fn fixture_geospatial_invalid_empty_layers() {
+    let value = load_fixture("geospatial_invalid_empty_layers.json");
+    let err = parse_geospatial(&value).expect_err("empty layers");
+    assert!(matches!(err, DomainParseError::Validation(_)));
+}
+
+#[test]
+fn fixture_structural_valid_roundtrips() {
+    let value = load_fixture("structural_valid.json");
+    let domain = parse_structural(&value).expect("valid structural fixture");
+    assert_eq!(domain.properties.members[0].section, "W12x26");
+    let again = parse_structural(&serialize_structural(&domain)).expect("roundtrip");
+    assert_eq!(again, domain);
+}
+
+#[test]
+fn fixture_structural_invalid_empty_members() {
+    let value = load_fixture("structural_invalid_empty_members.json");
+    let err = parse_structural(&value).expect_err("empty members");
+    assert!(matches!(err, DomainParseError::Validation(_)));
+}
+
+#[test]
+fn fixture_energy_building_valid_roundtrips() {
+    let value = load_fixture("energy_building_valid.json");
+    let domain = parse_energy_building(&value).expect("valid energy_building fixture");
+    assert_eq!(domain.properties.zones[0].name, "Open Office");
+    let again = parse_energy_building(&serialize_energy_building(&domain)).expect("roundtrip");
+    assert_eq!(again, domain);
+}
+
+#[test]
+fn fixture_energy_building_invalid_empty_zones() {
+    let value = load_fixture("energy_building_invalid_empty_zones.json");
+    let err = parse_energy_building(&value).expect_err("empty zones");
+    assert!(matches!(err, DomainParseError::Validation(_)));
+}
+
+#[test]
 fn parse_domain_dispatches_from_fixtures() {
     for name in [
         "schematic_valid.json",
@@ -177,6 +252,10 @@ fn parse_domain_dispatches_from_fixtures() {
         "simulation_valid.json",
         "bom_valid.json",
         "firmware_valid.json",
+        "bim_valid.json",
+        "geospatial_valid.json",
+        "structural_valid.json",
+        "energy_building_valid.json",
     ] {
         let value = load_fixture(name);
         parse_domain(&value).unwrap_or_else(|e| panic!("parse_domain {name}: {e}"));

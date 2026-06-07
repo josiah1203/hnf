@@ -30,6 +30,47 @@ pub struct MechanicalProperties {
     pub solids: Vec<MechanicalSolid>,
     #[serde(default)]
     pub constraints: Vec<MechanicalConstraint>,
+    #[serde(default)]
+    pub tolerances: Vec<MechanicalTolerance>,
+    #[serde(default)]
+    pub materials: Vec<MechanicalMaterialSpec>,
+    #[serde(default)]
+    pub boundary_conditions: Vec<MechanicalBoundaryCondition>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MechanicalGeometryBlob {
+    pub format: String,
+    pub content_hash: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MechanicalTolerance {
+    pub id: String,
+    pub feature_id: String,
+    pub tolerance_type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub value_mm: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MechanicalMaterialSpec {
+    pub id: String,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub density_kg_m3: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MechanicalBoundaryCondition {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub bc_type: String,
+    pub solid_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -40,6 +81,8 @@ pub struct MechanicalSolid {
     pub material: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume_mm3: Option<f64>,
+    #[serde(default)]
+    pub geometry_blobs: Vec<MechanicalGeometryBlob>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -98,6 +141,22 @@ pub fn validate_mechanical(domain: &MechanicalDomain) -> Result<(), Vec<DomainVa
         |c| &c.id,
     ));
 
+    errors.extend(non_empty_ids(
+        domain.properties.tolerances.iter(),
+        "properties.tolerances",
+        |t| &t.id,
+    ));
+    errors.extend(non_empty_ids(
+        domain.properties.materials.iter(),
+        "properties.materials",
+        |m| &m.id,
+    ));
+    errors.extend(non_empty_ids(
+        domain.properties.boundary_conditions.iter(),
+        "properties.boundary_conditions",
+        |b| &b.id,
+    ));
+
     let solid_ids: std::collections::HashSet<_> =
         domain.properties.solids.iter().map(|s| s.id.as_str()).collect();
 
@@ -119,6 +178,42 @@ pub fn validate_mechanical(domain: &MechanicalDomain) -> Result<(), Vec<DomainVa
                 errors.push(DomainValidationError {
                     field: format!("properties.constraints[{i}].solid_b"),
                     message: format!("unknown solid_b \"{sb}\""),
+                });
+            }
+        }
+    }
+
+    for (i, tol) in domain.properties.tolerances.iter().enumerate() {
+        if !solid_ids.contains(tol.feature_id.as_str()) {
+            errors.push(DomainValidationError {
+                field: format!("properties.tolerances[{i}].feature_id"),
+                message: format!("unknown feature_id \"{}\"", tol.feature_id),
+            });
+        }
+    }
+
+    for (i, bc) in domain.properties.boundary_conditions.iter().enumerate() {
+        if !solid_ids.contains(bc.solid_id.as_str()) {
+            errors.push(DomainValidationError {
+                field: format!("properties.boundary_conditions[{i}].solid_id"),
+                message: format!("unknown solid_id \"{}\"", bc.solid_id),
+            });
+        }
+    }
+
+    for (i, solid) in domain.properties.solids.iter().enumerate() {
+        for (j, blob) in solid.geometry_blobs.iter().enumerate() {
+            let h = blob.content_hash.trim();
+            if blob.format.trim().is_empty() {
+                errors.push(DomainValidationError {
+                    field: format!("properties.solids[{i}].geometry_blobs[{j}].format"),
+                    message: "required non-empty string".into(),
+                });
+            }
+            if h.len() != 64 || !h.chars().all(|c| c.is_ascii_hexdigit()) {
+                errors.push(DomainValidationError {
+                    field: format!("properties.solids[{i}].geometry_blobs[{j}].content_hash"),
+                    message: "must be 64 hex characters (sha256)".into(),
                 });
             }
         }
@@ -150,6 +245,7 @@ mod tests {
                     name: "Mounting Bracket".into(),
                     material: Some("Aluminum".into()),
                     volume_mm3: Some(128.5),
+                    geometry_blobs: vec![],
                 }],
                 constraints: vec![MechanicalConstraint {
                     id: "c-fix-1".into(),
@@ -157,6 +253,10 @@ mod tests {
                     solid_a: "solid-bracket-1".into(),
                     solid_b: None,
                 }],
+                tolerances: vec![],
+                materials: vec![],
+                boundary_conditions: vec![],
+                notes: None,
             },
         }
     }

@@ -2,21 +2,38 @@
 
 use serde_json::Value;
 
+mod bim;
 mod bom;
+mod energy_building;
 mod firmware;
+mod geospatial;
 mod ic_layout;
 mod layout;
 mod mechanical;
 mod schematic;
 mod simulation;
+mod structural;
 
+pub use bim::{
+    parse_bim, serialize_bim, validate_bim, BimDomain, BimElement, BimProperties, BimStorey,
+    BIM_DOMAIN, BIM_VERSION,
+};
 pub use bom::{
     parse_bom, serialize_bom, validate_bom, BomDomain, BomLine, BomProperties, BOM_DOMAIN,
     BOM_VERSION,
 };
+pub use energy_building::{
+    parse_energy_building, serialize_energy_building, validate_energy_building, EnergyBuildingDomain,
+    EnergyBuildingProperties, EnergySystem, EnergyZone, ENERGY_BUILDING_DOMAIN,
+    ENERGY_BUILDING_VERSION,
+};
 pub use firmware::{
     parse_firmware, serialize_firmware, validate_firmware, FirmwareArtifact, FirmwareDomain,
     FirmwareProperties, FirmwareSource, FirmwareTarget, FIRMWARE_DOMAIN, FIRMWARE_VERSION,
+};
+pub use geospatial::{
+    parse_geospatial, serialize_geospatial, validate_geospatial, GeospatialDomain,
+    GeospatialLayer, GeospatialProperties, GEOSPATIAL_DOMAIN, GEOSPATIAL_VERSION,
 };
 pub use ic_layout::{
     parse_ic_layout, serialize_ic_layout, validate_ic_layout, IcLayer, IcLayoutDomain,
@@ -27,8 +44,9 @@ pub use layout::{
     LayoutProperties, LayoutTrack, LAYOUT_DOMAIN, LAYOUT_VERSION,
 };
 pub use mechanical::{
-    parse_mechanical, serialize_mechanical, validate_mechanical, MechanicalConstraint,
-    MechanicalDomain, MechanicalProperties, MechanicalSolid, MECHANICAL_DOMAIN,
+    parse_mechanical, serialize_mechanical, validate_mechanical, MechanicalBoundaryCondition,
+    MechanicalConstraint, MechanicalDomain, MechanicalGeometryBlob, MechanicalMaterialSpec,
+    MechanicalProperties, MechanicalSolid, MechanicalTolerance, MECHANICAL_DOMAIN,
     MECHANICAL_VERSION,
 };
 pub use schematic::{
@@ -40,6 +58,11 @@ pub use simulation::{
     parse_simulation, serialize_simulation, validate_simulation, SimulationDomain,
     SimulationModel, SimulationProbe, SimulationProperties, SIMULATION_DOMAIN,
     SIMULATION_VERSION,
+};
+pub use structural::{
+    parse_structural, serialize_structural, validate_structural, StructuralDomain,
+    StructuralLoad, StructuralMaterial, StructuralMember, StructuralProperties,
+    STRUCTURAL_DOMAIN, STRUCTURAL_VERSION,
 };
 
 /// Phase 0 domains implemented in Rust (`hnf-core`).
@@ -53,7 +76,30 @@ pub const PHASE0_RUST_DOMAINS: &[&str] = &[
     FIRMWARE_DOMAIN,
 ];
 
-/// Parsed Phase 0 domain document (typed per domain).
+/// Phase 1 built-environment domains (M5-B).
+pub const PHASE1_RUST_DOMAINS: &[&str] = &[
+    BIM_DOMAIN,
+    GEOSPATIAL_DOMAIN,
+    STRUCTURAL_DOMAIN,
+    ENERGY_BUILDING_DOMAIN,
+];
+
+/// All Rust-implemented domain IDs (Phase 0 + Phase 1).
+pub const ALL_RUST_DOMAINS: &[&str] = &[
+    SCHEMATIC_DOMAIN,
+    LAYOUT_DOMAIN,
+    IC_LAYOUT_DOMAIN,
+    MECHANICAL_DOMAIN,
+    SIMULATION_DOMAIN,
+    BOM_DOMAIN,
+    FIRMWARE_DOMAIN,
+    BIM_DOMAIN,
+    GEOSPATIAL_DOMAIN,
+    STRUCTURAL_DOMAIN,
+    ENERGY_BUILDING_DOMAIN,
+];
+
+/// Parsed domain document (typed per domain).
 #[derive(Debug, Clone, PartialEq)]
 pub enum DomainDocument {
     Schematic(SchematicDomain),
@@ -63,6 +109,10 @@ pub enum DomainDocument {
     Simulation(SimulationDomain),
     Bom(BomDomain),
     Firmware(FirmwareDomain),
+    Bim(BimDomain),
+    Geospatial(GeospatialDomain),
+    Structural(StructuralDomain),
+    EnergyBuilding(EnergyBuildingDomain),
 }
 
 /// Deserialize and validate any Phase 0 domain payload by `domain` field.
@@ -80,6 +130,10 @@ pub fn parse_domain(value: &Value) -> Result<DomainDocument, DomainParseError> {
         SIMULATION_DOMAIN => parse_simulation(value).map(DomainDocument::Simulation),
         BOM_DOMAIN => parse_bom(value).map(DomainDocument::Bom),
         FIRMWARE_DOMAIN => parse_firmware(value).map(DomainDocument::Firmware),
+        BIM_DOMAIN => parse_bim(value).map(DomainDocument::Bim),
+        GEOSPATIAL_DOMAIN => parse_geospatial(value).map(DomainDocument::Geospatial),
+        STRUCTURAL_DOMAIN => parse_structural(value).map(DomainDocument::Structural),
+        ENERGY_BUILDING_DOMAIN => parse_energy_building(value).map(DomainDocument::EnergyBuilding),
         other => Err(DomainParseError::Serde(format!(
             "unsupported domain \"{other}\""
         ))),

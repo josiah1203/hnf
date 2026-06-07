@@ -2,11 +2,45 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://hummingbird.dev/hnf/v0.1/domains/geospatial.json",
   "title": "HNF domain: geospatial",
+  "description": "Geospatial domain — CRS and layers (HNF v0.1 Phase 1).",
   "type": "object",
-  "description": "Stub — Phase 1 domain.",
+  "additionalProperties": false,
+  "required": ["domain", "version", "hnf_type", "object_id", "properties"],
   "properties": {
     "domain": { "const": "geospatial" },
-    "version": { "const": "0.1" }
+    "version": { "const": "0.1" },
+    "hnf_type": { "type": "string", "minLength": 1, "default": "hardware.object" },
+    "object_id": { "type": "string", "minLength": 1 },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "description": "SHA-256 of Tier B geometry blob (GeoJSON/Shapefile)"
+    },
+    "refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "default": [] },
+    "properties": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["crs", "layers"],
+      "properties": {
+        "crs": { "type": "string", "minLength": 1 },
+        "layers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/layer" }
+        }
+      }
+    }
   },
-  "required": ["domain", "version"]
+  "$defs": {
+    "layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "feature_count": { "type": "integer", "minimum": 0, "default": 0 }
+      }
+    }
+  }
 }
